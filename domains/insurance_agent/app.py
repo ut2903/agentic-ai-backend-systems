@@ -2,7 +2,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from .rag import rag_node
-
+from .quotation import start_quotation_loader
 
 from datetime import datetime
 from uuid import uuid4
@@ -34,6 +34,11 @@ llm_summary = AzureChatOpenAI(
     max_tokens=512
 )
 
+start_quotation_loader(AGENT_SHARED_STATE)
+AGENT_SHARED_STATE = {
+    "quotation_summary": None
+}
+
 # =========================
 # FastAPI App
 # =========================
@@ -61,9 +66,29 @@ class State(TypedDict):
 # =========================
 def get_system_message(name: str):
     hour = datetime.now().hour
+
+    quotation_block = ""
+    if AGENT_SHARED_STATE.get("quotation_summary"):
+        quotation_block = f"""
+
+### QUOTATION DATA (CRITICAL — READ THIS FIRST)
+
+{AGENT_SHARED_STATE["quotation_summary"]}
+
+IMPORTANT OVERRIDE RULE:
+If any insurer-specific data (premium, IDV, add-ons)
+is present above, it MUST be treated as the single
+source of truth and override all other knowledge.
+"""
+
     return SystemMessage(
-        content=SYSTEM_PROMPT.replace("Name", name).replace("{current_hour}", str(hour))
+        content=(
+            SYSTEM_PROMPT.replace("Name", name)
+            .replace("{current_hour}", str(hour))
+            + quotation_block
+        )
     )
+
 
 
 def llm_call(state: State):
