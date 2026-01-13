@@ -1,6 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from .rag import rag_node
+
 
 from datetime import datetime
 from uuid import uuid4
@@ -155,6 +157,10 @@ workflow = StateGraph(State)
 
 workflow.add_node("llm_call", llm_call)
 workflow.add_node("summarize_conversation", summarize_conversation)
+
+workflow.add_node("rag_node", rag_node)
+workflow.add_edge("rag_node", "llm_call_postrag")
+
 
 workflow.set_entry_point("llm_call")
 
