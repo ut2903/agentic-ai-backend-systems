@@ -1,0 +1,16 @@
+# Web frameworks
+fastapi
+flask
+flask-cors
+uvicorn
+
+# Agent orchestration
+langgraph
+
+# LLM interfaces (provider-agnostic usage via adapters)
+langchain
+langchain-openai
+
+# Core utilities
+typing-extensions
+requests
